@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'service_model.dart';
-import 'booking_screen.dart';
+import 'package:flutter_application_88/booking_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ServiceDetailsScreen extends StatelessWidget {
+import 'service_model.dart';
+import 'login_screen.dart';
+import 'rating_screen.dart';
+
+class ServiceDetailsScreen extends StatefulWidget {
   final ServiceModel service;
 
   const ServiceDetailsScreen({
@@ -11,7 +15,81 @@ class ServiceDetailsScreen extends StatelessWidget {
   });
 
   @override
+  State<ServiceDetailsScreen> createState() =>
+      _ServiceDetailsScreenState();
+}
+
+class _ServiceDetailsScreenState
+    extends State<ServiceDetailsScreen> {
+  bool isFavourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkFavourite();
+  }
+
+  Future<void> checkFavourite() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    List<String> favourites =
+        prefs.getStringList("favourites") ?? [];
+
+    setState(() {
+      isFavourite = favourites.contains(
+        widget.service.serviceMasterId.toString(),
+      );
+    });
+  }
+
+  Future<void> toggleFavourite() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    List<String> favourites =
+        prefs.getStringList("favourites") ?? [];
+
+    if (favourites.contains(
+      widget.service.serviceMasterId.toString(),
+    )) {
+      favourites.remove(
+        widget.service.serviceMasterId.toString(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text("Removed from favourites"),
+        ),
+      );
+    } else {
+      favourites.add(
+        widget.service.serviceMasterId.toString(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text("Added to favourites"),
+        ),
+      );
+    }
+
+    await prefs.setStringList(
+      "favourites",
+      favourites,
+    );
+
+    setState(() {
+      isFavourite = !isFavourite;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final service = widget.service;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(service.serviceName),
@@ -30,7 +108,8 @@ class ServiceDetailsScreen extends StatelessWidget {
             ),
 
             Padding(
-              padding: const EdgeInsets.all(15),
+              padding:
+                  const EdgeInsets.all(15),
               child: Column(
                 crossAxisAlignment:
                     CrossAxisAlignment.start,
@@ -40,7 +119,8 @@ class ServiceDetailsScreen extends StatelessWidget {
                     service.serviceName,
                     style: const TextStyle(
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
 
@@ -49,9 +129,11 @@ class ServiceDetailsScreen extends StatelessWidget {
                   Text(
                     "Category: ${service.subCategoryName}",
                     style: const TextStyle(
-                      color: Color.fromARGB(255, 225, 86, 86),
+                      color: Color.fromARGB(
+                          255, 225, 86, 86),
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
 
@@ -62,7 +144,8 @@ class ServiceDetailsScreen extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.green,
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
 
@@ -72,7 +155,8 @@ class ServiceDetailsScreen extends StatelessWidget {
                     "Service Details",
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
 
@@ -89,38 +173,138 @@ class ServiceDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 25),
 
+                  Row(
+                    children: [
+
+                      Expanded(
+                        child: ElevatedButton(
+                          style:
+                              ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.blue,
+                            foregroundColor:
+                                Colors.white,
+                            minimumSize:
+                                const Size.fromHeight(
+                                    50),
+                          ),
+                      
+                       onPressed: () async {
+                            final prefs =
+                                await SharedPreferences.getInstance();
+
+                            String userId =
+                                prefs.getString("user_id") ?? "";
+
+                            if (userId.isEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BookingScreen(
+                                    userId: userId,
+                                    serviceMasterId:
+                                        service.serviceMasterId,
+                                    serviceName:
+                                        service.serviceName,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            "Book Now",
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child:
+                            ElevatedButton.icon(
+                          style:
+                              ElevatedButton.styleFrom(
+                            backgroundColor:
+                                Colors.red,
+                            foregroundColor:
+                                Colors.white,
+                            minimumSize:
+                                const Size.fromHeight(
+                                    50),
+                          ),
+                          onPressed:
+                              toggleFavourite,
+                          icon: Icon(
+                            isFavourite
+                                ? Icons.favorite
+                                : Icons
+                                    .favorite_border,
+                          ),
+                          label: Text(
+                            isFavourite
+                                ? "Unfavourite"
+                                : "Favourite",
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
+                    child:
+                        ElevatedButton.icon(
                       style:
                           ElevatedButton.styleFrom(
                         backgroundColor:
-                            Colors.blue,
+                            Colors.amber,
                         foregroundColor:
-                            Colors.white,
+                            Colors.black,
+                        minimumSize:
+                            const Size.fromHeight(
+                                55),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BookingScreen(
-                              userId: "1", // Replace with actual user ID
-                              serviceMasterId: service.serviceMasterId,
+                            builder: (_) =>
+                                RatingScreen(
+                              productId: service
+                                  .serviceMasterId
+                                  .toString(),
                             ),
                           ),
                         );
                       },
-                      child: const Text(
-                        "Book Now",
+                      icon:
+                          const Icon(Icons.star),
+                      label: const Text(
+                        "Rate Service",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
           ],
-        ),
+          ),
       ),
     );
   }

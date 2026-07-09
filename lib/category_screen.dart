@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/home_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'category_model.dart';
 import 'subcategory_screen.dart';
+import 'app_drawer.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -42,54 +45,77 @@ class _CategoryScreenState extends State<CategoryScreen> {
       debugPrint(e.toString());
     }
   }
+  Future<void> logout() async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HomeScreen(),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    for (var item in categoryList) {
-      print(item.categoryImage);
-    }
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Category List"),
+        title: const Text("Categories"),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
       ),
+      drawer: const AppDrawer(),
       body: Padding(
       padding: const EdgeInsets.all(10),
       child: GridView.builder(
-  itemCount: categoryList.length,
-  gridDelegate:
-      const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2,
-    crossAxisSpacing: 10,
-    mainAxisSpacing: 10,
-    childAspectRatio: 0.65,
-  ),
-  itemBuilder: (context, index) {
-    final item = categoryList[index];
+        itemCount: categoryList.length,
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 0.70,
+        ),
+      itemBuilder: (context, index) {
+        final item = categoryList[index];
 
     return Card(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
             flex: 7,
             child: Image.network(
-            item.categoryImage,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            errorBuilder: (context, error, stackTrace) {
-              print("FAILED URL = ${item.categoryImage}");
-              print(error);
-              return const Icon(Icons.broken_image);
-            },
-          )   
-          ), 
+              item.categoryImage,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) {
+                debugPrint("FAILED URL = ${item.categoryImage}");
+                debugPrint(error.toString());
+                return const Icon(Icons.broken_image);
+              },
+            ),
+          ),
           Expanded(
             flex: 3,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: 40,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
@@ -99,9 +125,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              const SubCategoryScreen(),
+                          builder: (_) => SubCategoryScreen(
+                            categoryId: item.categoryId.toString(),
+                          ),
                         ),
+
                       );
                     },
                     child: const Text(

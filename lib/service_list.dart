@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_88/service_details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'service_model.dart';
+import 'app_drawer.dart';
 
 class ServiceListScreen extends StatefulWidget {
-  const ServiceListScreen({super.key});
+  final String? subCategoryId;
+
+  const ServiceListScreen({
+    super.key,
+    this.subCategoryId,
+  });
 
   @override
   State<ServiceListScreen> createState() =>
@@ -37,12 +43,18 @@ class _ServiceListScreenState
       if (data["flag"] == "1") {
         List list = data["service_list"];
 
+      if (widget.subCategoryId != null &&
+            widget.subCategoryId!.isNotEmpty) {
+          list = list.where((e) {
+            return e["category"]["sub_category_id"] ==
+                widget.subCategoryId;
+          }).toList();
+        }
+        
         setState(() {
-          serviceList = list
-              .map((e) => ServiceModel.fromJson(e))
-              .toList();
+          serviceList = list.map((e) => ServiceModel.fromJson(e)).toList();
 
-          isLoading = false;
+        isLoading = false;
         });
       }
     } catch (e) {
@@ -59,7 +71,16 @@ class _ServiceListScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text("Services"),
+      leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
       ),
+      drawer: const AppDrawer(),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),

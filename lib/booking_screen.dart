@@ -2,14 +2,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+
 class BookingScreen extends StatefulWidget {
   final String userId;
   final String serviceMasterId;
+  final String serviceName;
 
   const BookingScreen({
     super.key,
     required this.userId,
     required this.serviceMasterId,
+    required this.serviceName,
   });
 
   @override
@@ -22,7 +25,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   bool isLoading = false;
   String message = "";
-  Color messageColor = Colors.green;
+  Color messageColor = Colors.green; 
   
 
   Future<void> addBooking() async {
@@ -102,10 +105,25 @@ class _BookingScreenState extends State<BookingScreen> {
       appBar: AppBar(
         title: const Text("Book Service"),
       ),
+     
       body: Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
           children: [
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(
+                  Icons.design_services,
+                  color: Colors.blue,
+                ),
+                title: Text(widget.serviceName),
+                subtitle: Text(
+                  "Service ID : ${widget.serviceMasterId}",
+                ),
+              ),
+            ),
+            
           TextField(
               controller: dateController,
               readOnly: true,
