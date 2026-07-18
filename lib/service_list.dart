@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:flutter_application_88/service_details_screen.dart';
-import 'package:http/http.dart' as http;
-import 'service_model.dart';
+import 'package:flutter_application_88/models/service_model.dart';
+import 'package:flutter_application_88/viewmodels/service_view_model.dart';
 import 'app_drawer.dart';
 
 class ServiceListScreen extends StatefulWidget {
@@ -20,57 +20,48 @@ class ServiceListScreen extends StatefulWidget {
 
 class _ServiceListScreenState
     extends State<ServiceListScreen> {
-  List<ServiceModel> serviceList = [];
+      final ServiceViewModel serviceVM =
+    ServiceViewModel();
 
-  bool isLoading = true;
-
-  @override
+ @override
   void initState() {
     super.initState();
-    getServices();
-  }
 
-  Future<void> getServices() async {
-    try {
-      final response = await http.post(
-        Uri.parse(
-          'https://akashsir.in/atproject/atfinder-web/api/api-list-service.php',
-        ),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (data["flag"] == "1") {
-        List list = data["service_list"];
+    serviceVM.loadServices().then((_) {
 
       if (widget.subCategoryId != null &&
-            widget.subCategoryId!.isNotEmpty) {
-          list = list.where((e) {
-            return e["category"]["sub_category_id"] ==
-                widget.subCategoryId;
-          }).toList();
-        }
-        
-        setState(() {
-          serviceList = list.map((e) => ServiceModel.fromJson(e)).toList();
+          widget.subCategoryId!.isNotEmpty) {
 
-        isLoading = false;
-        });
+        serviceVM.filteredList = serviceVM.filteredList
+            .where(
+              (service) =>
+                  service.subCategoryId ==
+                  widget.subCategoryId,
+            )
+            .toList();
       }
-    } catch (e) {
-      debugPrint(e.toString());
 
-      setState(() {
-        isLoading = false;
-      });
-    }
+      setState(() {});
+    });
   }
+  void searchService(String value) {
+  setState(() {
+    serviceVM.search(value);
+  });
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text("Services"),
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text("Services", style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
       leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -81,15 +72,40 @@ class _ServiceListScreenState
         ),
       ),
       drawer: const AppDrawer(),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
+     body: serviceVM.isLoading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+    : Column(
+        children: [
+
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: TextField(
+              onChanged: searchService,
+              decoration: InputDecoration(
+                hintText: "Search Services...",
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: ListView.builder(
               padding: const EdgeInsets.all(10),
-              itemCount: serviceList.length,
+              itemCount: serviceVM.filteredList.length,
               itemBuilder: (context, index) {
-                final item = serviceList[index];
+               final item = serviceVM.filteredList[index];
+
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -120,7 +136,8 @@ class _ServiceListScreenState
                                 item.serviceName,
                                 style: const TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                 ),
                               ),
 
@@ -140,7 +157,8 @@ class _ServiceListScreenState
                                 style: const TextStyle(
                                   color: Colors.green,
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight.bold,
                                 ),
                               ),
 
@@ -150,15 +168,19 @@ class _ServiceListScreenState
                                 width: double.infinity,
                                 height: 40,
                                 child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
+                                  style:
+                                      ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        const Color.fromARGB(238, 13, 27, 61),
+                                    foregroundColor:
+                                        Colors.white,
                                   ),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => ServiceDetailsScreen(
+                                        builder: (_) =>
+                                            ServiceDetailsScreen(
                                           service: item,
                                         ),
                                       ),
@@ -178,6 +200,9 @@ class _ServiceListScreenState
                 );
               },
             ),
+          ),
+        ],
+      ),
     );
   }
 }

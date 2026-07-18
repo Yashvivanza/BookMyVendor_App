@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_application_88/viewmodels/booking_view_model.dart';
 
 
 class BookingScreen extends StatefulWidget {
@@ -22,71 +24,56 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController dateController =
       TextEditingController();
-
+  final BookingViewModel bookingVM =
+    BookingViewModel();
   bool isLoading = false;
   String message = "";
   Color messageColor = Colors.green; 
   
 
   Future<void> addBooking() async {
-  if (dateController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Select Booking Date"),
-      ),
-    );
-    return;
-  }
 
-  setState(() {
-    isLoading = true;
-  });
+      if (dateController.text.isEmpty) {
 
-  try {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-        'https://akashsir.in/atproject/atfinder-web/api/api-add-booking.php',
-      ),
-    );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          const SnackBar(
+            content:
+                Text("Select Booking Date"),
+          ),
+        );
 
-    request.fields['booking_date'] =
-        dateController.text.trim();
-
-    request.fields['user_id'] =
-        widget.userId;
-
-    request.fields['service_master_id'] =
-        widget.serviceMasterId;
-
-    var response = await request.send();
-
-    var data = jsonDecode(
-      await response.stream.bytesToString(),
-    );
-
-    setState(() {
-      isLoading = false;
-      message = data["message"];
-
-      if (data["flag"] == "1") {
-        messageColor = Colors.green;
-      } else {
-        messageColor = Colors.red;
+        return;
       }
-    });
-  } catch (e) {
-    setState(() {
-      isLoading = false;
-      message = "Something went wrong";
-      messageColor = Colors.red;
-    });
-  }
-}
 
+      setState(() {
+        isLoading = true;
+      });
+
+      var data =
+          await bookingVM.addBooking(
+        bookingDate:
+            dateController.text.trim(),
+        userId:
+            widget.userId,
+        serviceMasterId:
+            widget.serviceMasterId,
+      );
+
+      setState(() {
+        isLoading = false;
+
+        message =
+            data["message"];
+
+        messageColor =
+            data["flag"] == "1"
+                ? Colors.green
+                : Colors.red;
+      });
+    }
   Future<void> selectDate() async {
-    DateTime? pickedDate =
-        await showDatePicker(
+    DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime.now(),
@@ -94,16 +81,24 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     if (pickedDate != null) {
-      dateController.text =
-          "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+      setState(() {
+        dateController.text =
+            "${pickedDate.day}-${pickedDate.month}-${pickedDate.year}";
+      });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text("Book Service"),
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text("Book Service",style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
       ),
      
       body: Padding(
@@ -123,16 +118,24 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
               ),
             ),
-            
+            const SizedBox(height: 25),
           TextField(
               controller: dateController,
               readOnly: true,
               onTap: selectDate,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
               decoration: const InputDecoration(
                 labelText: "Booking Date",
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ),
                 border: OutlineInputBorder(),
-                suffixIcon:
-                    Icon(Icons.calendar_month),
+                suffixIcon: Icon(
+                  Icons.calendar_month,
+                  color: Colors.white,
+                ),
               ),
             ),
 
@@ -150,8 +153,6 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
 
             const SizedBox(height: 15),
-            const SizedBox(height: 20),
-
             SizedBox(
               width: double.infinity,
               height: 50,

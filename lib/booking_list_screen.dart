@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_drawer.dart';
-
+import 'package:flutter_application_88/viewmodels/booking_view_model.dart';
 class BookingListScreen extends StatefulWidget {
   const BookingListScreen({super.key});
 
@@ -14,6 +15,8 @@ class BookingListScreen extends StatefulWidget {
 
 class _BookingListScreenState
     extends State<BookingListScreen> {
+  final BookingViewModel bookingVM =
+    BookingViewModel();
   List bookingList = [];
   bool isLoading = true;
 
@@ -24,52 +27,35 @@ class _BookingListScreenState
   }
 
   Future<void> getBookings() async {
-    try {
-      final prefs =
-          await SharedPreferences.getInstance();
 
-      String userId =
-          prefs.getString("user_id") ?? "";
+  final prefs =
+      await SharedPreferences.getInstance();
 
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse(
-          'https://akashsir.in/atproject/atfinder-web/api/api-list-booking.php',
-        ),
-      );
+  String userId =
+      prefs.getString("user_id") ?? "";
 
-      request.fields["user_id"] = userId;
+  await bookingVM.getBookings(userId);
 
-      var response = await request.send();
+  setState(() {
 
-      var data = jsonDecode(
-        await response.stream.bytesToString(),
-      );
+    bookingList =
+        bookingVM.bookingList;
 
-      if (data["flag"] == "1") {
-        setState(() {
-          bookingList = data["booking_list"];
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print(e);
-
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+    isLoading = false;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text("My Bookings"),
+        backgroundColor: AppColors.bg,
+        iconTheme: IconThemeData(
+          color: Colors.white
+        ),
+        title: const Text("My Bookings",
+        style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
       ),
       drawer: const AppDrawer(),
       body: isLoading
@@ -161,9 +147,7 @@ class _BookingListScreenState
                                 ),
                               ),
 
-                              const SizedBox(
-                                  height: 5),
-
+                              
                               
                             ],
                           ),

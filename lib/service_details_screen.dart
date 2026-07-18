@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_88/booking_screen.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
+import 'package:flutter_application_88/views/booking_screen.dart';
+import 'package:flutter_application_88/views/rating_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'service_model.dart';
+import 'package:flutter_application_88/models/service_model.dart';
 import 'login_screen.dart';
-import 'rating_screen.dart';
+import 'package:flutter_application_88/viewmodels/favourite_view_model.dart';
 
 class ServiceDetailsScreen extends StatefulWidget {
   final ServiceModel service;
@@ -21,6 +22,8 @@ class ServiceDetailsScreen extends StatefulWidget {
 
 class _ServiceDetailsScreenState
     extends State<ServiceDetailsScreen> {
+      final FavouriteViewModel favouriteVM =
+    FavouriteViewModel();
   bool isFavourite = false;
 
   @override
@@ -30,69 +33,55 @@ class _ServiceDetailsScreenState
   }
 
   Future<void> checkFavourite() async {
-    final prefs =
-        await SharedPreferences.getInstance();
 
-    List<String> favourites =
-        prefs.getStringList("favourites") ?? [];
+  isFavourite =
+      await favouriteVM.isFavourite(
+    widget.service.serviceMasterId,
+  );
 
-    setState(() {
-      isFavourite = favourites.contains(
-        widget.service.serviceMasterId.toString(),
-      );
-    });
-  }
+  setState(() {});
+}
 
-  Future<void> toggleFavourite() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+ Future<void> toggleFavourite() async {
 
-    List<String> favourites =
-        prefs.getStringList("favourites") ?? [];
+  bool result =
+      await favouriteVM.toggleFavourite(
+    widget.service.serviceMasterId,
+  );
 
-    if (favourites.contains(
-      widget.service.serviceMasterId.toString(),
-    )) {
-      favourites.remove(
-        widget.service.serviceMasterId.toString(),
-      );
+  setState(() {
+    isFavourite = result;
+  });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text("Removed from favourites"),
-        ),
-      );
-    } else {
-      favourites.add(
-        widget.service.serviceMasterId.toString(),
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text("Added to favourites"),
-        ),
-      );
-    }
-
-    await prefs.setStringList(
-      "favourites",
-      favourites,
-    );
-
-    setState(() {
-      isFavourite = !isFavourite;
-    });
-  }
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        result
+            ? "Added to favourites"
+            : "Removed from favourites",
+      ),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
     final service = widget.service;
 
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: Text(service.serviceName),
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: Text(
+          service.serviceName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -118,6 +107,7 @@ class _ServiceDetailsScreenState
                   Text(
                     service.serviceName,
                     style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 22,
                       fontWeight:
                           FontWeight.bold,
@@ -154,6 +144,7 @@ class _ServiceDetailsScreenState
                   const Text(
                     "Service Details",
                     style: TextStyle(
+                      color: Colors.white,
                       fontSize: 18,
                       fontWeight:
                           FontWeight.bold,
@@ -167,6 +158,7 @@ class _ServiceDetailsScreenState
                         ? "No details available"
                         : service.serviceDetails,
                     style: const TextStyle(
+                      color:Colors.grey,
                       fontSize: 15,
                     ),
                   ),
@@ -177,67 +169,67 @@ class _ServiceDetailsScreenState
                     children: [
 
                       Expanded(
-                        child: ElevatedButton(
-                          style:
-                              ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Colors.blue,
-                            foregroundColor:
-                                Colors.white,
-                            minimumSize:
-                                const Size.fromHeight(
-                                    50),
-                          ),
                       
-                       onPressed: () async {
-                            final prefs =
-                                await SharedPreferences.getInstance();
+                        child: SizedBox(
+                          height: 45,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
 
-                            String userId =
-                                prefs.getString("user_id") ?? "";
+                              String userId =
+                                  prefs.getString("user_id") ?? "";
 
-                            if (userId.isEmpty) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
-                                ),
-                              );
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BookingScreen(
-                                    userId: userId,
-                                    serviceMasterId:
-                                        service.serviceMasterId,
-                                    serviceName:
-                                        service.serviceName,
+                              if (userId.isEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
                                   ),
-                                ),
-                              );
-                            }
-                          },
-                          child: const Text(
-                            "Book Now",
+                                );
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BookingScreen(
+                                      userId: userId,
+                                      serviceMasterId:
+                                          service.serviceMasterId,
+                                      serviceName:
+                                          service.serviceName,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              "Book Now",
+                              style: TextStyle(fontSize: 14),
+                            ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(width: 10),
+                    
+                      const SizedBox(width: 9),
 
-                      Expanded(
-                        child:
-                            ElevatedButton.icon(
-                          style:
-                              ElevatedButton.styleFrom(
-                            backgroundColor:
-                                Colors.red,
-                            foregroundColor:
-                                Colors.white,
-                            minimumSize:
-                                const Size.fromHeight(
-                                    50),
+                    Expanded(
+                      child: SizedBox(
+                        height: 47,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                           onPressed:
                               toggleFavourite,
@@ -245,16 +237,18 @@ class _ServiceDetailsScreenState
                             isFavourite
                                 ? Icons.favorite
                                 : Icons
-                                    .favorite_border,
+                                    .favorite_border,size:18,
                           ),
                           label: Text(
                             isFavourite
                                 ? "Unfavourite"
-                                : "Favourite",
+                                : "Favourite",style: TextStyle(fontSize: 12),
                           ),
                         ),
                       ),
+                    ),
                     ],
+
                   ),
 
                   const SizedBox(height: 15),

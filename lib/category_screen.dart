@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:flutter_application_88/home_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'category_model.dart';
+import 'package:flutter_application_88/models/Category_model.dart';
 import 'subcategory_screen.dart';
 import 'app_drawer.dart';
 
@@ -65,8 +66,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor:AppColors.bg,
       appBar: AppBar(
-        title: const Text("Categories"),
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text(
+          "Categories",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -108,17 +120,26 @@ class _CategoryScreenState extends State<CategoryScreen> {
               },
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ElevatedButton(
+         Expanded(
+            flex: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+
+                  Text(
+                    item.categoryName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: const Color.fromARGB(238, 13, 27, 61),
                       foregroundColor: Colors.white,
                     ),
                     onPressed: () {
@@ -129,15 +150,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             categoryId: item.categoryId.toString(),
                           ),
                         ),
-
                       );
                     },
                     child: const Text(
                       "View Subcategory",
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

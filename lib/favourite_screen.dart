@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -100,10 +101,16 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text("My Favourites"),
-        centerTitle: true,
-      ),
+         backgroundColor: AppColors.bg,
+         iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text("My Favourites", style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,),
+      )),
       body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),

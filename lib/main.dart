@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'Home_screen.dart';
-
-void main() {
-  runApp(const MyApp());
+import 'splash_screen.dart';
+void main() async {
+  runApp(const SmartParkApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class SmartParkApp extends StatelessWidget {
+  const SmartParkApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'BookMyVendor App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }

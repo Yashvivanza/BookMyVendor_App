@@ -4,102 +4,137 @@ import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'login_screen.dart';
+class EditProfileScreen extends StatefulWidget {
+  final String name;
+  final String email;
+  final String mobile;
+  final String gender;
+  final String address;
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  const EditProfileScreen({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.mobile,
+    required this.gender,
+    required this.address,
+  });
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  State<EditProfileScreen> createState() =>
+      _EditProfileScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController mobileController = TextEditingController();
-  final TextEditingController addressController = TextEditingController();
+class _EditProfileScreenState
+    extends State<EditProfileScreen> {
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController mobileController;
+  late TextEditingController addressController;
 
   String? gender;
+
   bool isLoading = false;
 
-  String message = "";
-  Color messageColor = Colors.green;
+  @override
+  void initState() {
+    super.initState();
 
-  Future<void> signupUser() async {
-    if (nameController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        mobileController.text.isEmpty ||
-        addressController.text.isEmpty) {
-      setState(() {
-        message = "Please fill all fields";
-        messageColor = Colors.red;
-      });
-      return;
-    }
+    nameController =
+        TextEditingController(text: widget.name);
 
-    setState(() {
-      isLoading = true;
-      message = "";
-    });
+    emailController =
+        TextEditingController(text: widget.email);
 
+    mobileController =
+        TextEditingController(text: widget.mobile);
+
+    addressController =
+        TextEditingController(text: widget.address);
+
+    gender = (widget.gender.isNotEmpty) ? widget.gender : null;
+  }
+
+  Future<void> updateProfile() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final prefs =
+          await SharedPreferences.getInstance();
+
+      String userId =
+          prefs.getString("user_id") ?? "";
+
       var request = http.MultipartRequest(
-        'POST',
+        "POST",
         Uri.parse(
-          'https://akashsir.in/atproject/atfinder-web/api/api-signup.php',
+          "https://akashsir.in/atproject/atfinder-web/api/api-user-update.php",
         ),
       );
 
-      request.fields['user_name'] = nameController.text.trim();
-      request.fields['user_email'] = emailController.text.trim();
-      request.fields['user_password'] = passwordController.text.trim();
-      request.fields['user_gender'] = gender!;
-      request.fields['user_mobile'] = mobileController.text.trim();
-      request.fields['user_address'] = addressController.text.trim();
+      request.fields["user_id"] = userId;
+      request.fields["user_name"] =
+          nameController.text.trim();
+
+      request.fields["user_email"] =
+          emailController.text.trim();
+
+      request.fields["user_gender"] = gender ?? "";
+
+      request.fields["user_address"] =
+          addressController.text.trim();
+
+      request.fields["user_mobile"] =
+          mobileController.text.trim();
 
       var response = await request.send();
-      var responseData = await response.stream.bytesToString();
 
-      var data = jsonDecode(responseData);
+      var result =
+          await response.stream.bytesToString();
+
+      var data = jsonDecode(result);
 
       setState(() {
         isLoading = false;
-        message = data["message"];
-        messageColor = data["flag"] == "1" ? Colors.green : Colors.red;
       });
 
       if (data["flag"] == "1") {
-        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          "user_name",
+          nameController.text.trim(),
+        );
 
         await prefs.setString(
-            "user_name", nameController.text.trim());
-        await prefs.setString(
-            "user_email", emailController.text.trim());
+          "user_email",
+          emailController.text.trim(),
+        );
 
-        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(data["message"]),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-        Future.delayed(
-          const Duration(seconds: 1),
-          () {
-            if (!mounted) return;
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const LoginScreen(),
-              ),
-            );
-          },
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(data["message"]),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       setState(() {
         isLoading = false;
-        message = "Something went wrong";
-        messageColor = Colors.red;
       });
+
+      print(e);
     }
   }
 
@@ -112,7 +147,7 @@ class _SignupScreenState extends State<SignupScreen> {
         iconTheme: const IconThemeData(
           color: Colors.white,
         ),
-        title: const Text("Sign Up", style: TextStyle(
+        title: const Text("Edit Profile", style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,),
       )),
@@ -120,6 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+
             TextField(
               style: const TextStyle(
                 color: Colors.white,
@@ -174,10 +210,9 @@ class _SignupScreenState extends State<SignupScreen> {
               style: const TextStyle(
                 color: Colors.white,
               ),
-              controller: passwordController,
-              obscureText: true,
+              controller: mobileController,
               decoration: const InputDecoration(
-                labelText: "Password",
+                labelText: "Mobile",
                 labelStyle: TextStyle(
                   color: Colors.white,
                 ),
@@ -197,12 +232,12 @@ class _SignupScreenState extends State<SignupScreen> {
             const SizedBox(height: 15),
 
             DropdownButtonFormField<String>(
-              dropdownColor: AppColors.bg,
               value: gender,
               hint: const Text(
                 "Select",
                 style: TextStyle(color: Colors.white),
               ),
+              dropdownColor: AppColors.bg,
               style: const TextStyle(
                 color: Colors.white,
               ),
@@ -246,32 +281,6 @@ class _SignupScreenState extends State<SignupScreen> {
               style: const TextStyle(
                 color: Colors.white,
               ),
-              controller: mobileController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: "Mobile",
-                labelStyle: TextStyle(
-                  color: Colors.white,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.white,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            TextField(
-              style: const TextStyle(
-                color: Colors.white,
-              ),
               controller: addressController,
               maxLines: 3,
               decoration: const InputDecoration(
@@ -292,33 +301,23 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: isLoading ? null : signupUser,
+                onPressed:
+                    isLoading ? null : updateProfile,
                 child: isLoading
                     ? const CircularProgressIndicator(
                         color: Colors.white,
                       )
-                    : const Text("Register"),
+                    : const Text(
+                        "Update Profile",
+                      ),
               ),
             ),
-
-            const SizedBox(height: 15),
-
-            if (message.isNotEmpty)
-              Text(
-                message,
-                style: TextStyle(
-                  color: messageColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-                textAlign: TextAlign.center,
-              ),
           ],
         ),
       ),

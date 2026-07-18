@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +19,7 @@ class RatingScreen extends StatefulWidget {
 
 class _RatingScreenState
     extends State<RatingScreen> {
-  int selectedRating = 5;
+  int selectedRating = 0;
 
   bool isLoading = false;
 
@@ -153,6 +154,7 @@ class _RatingScreenState
 
   Widget buildStars(int rating) {
     return Row(
+      
       children: List.generate(
         5,
         (index) => Icon(
@@ -194,9 +196,17 @@ class _RatingScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
         title: const Text(
           "Rate Service",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)
         ),
       ),
       body: SingleChildScrollView(
@@ -211,6 +221,7 @@ class _RatingScreenState
               "Rate This Service",
               style: TextStyle(
                 fontSize: 22,
+                color: Colors.white,
                 fontWeight:
                     FontWeight.bold,
               ),
@@ -225,12 +236,26 @@ class _RatingScreenState
             TextField(
               controller:
                   nameController,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
               decoration:
                   const InputDecoration(
                 labelText:
                     "Your Name",
-                border:
-                    OutlineInputBorder(),
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
 
@@ -240,11 +265,25 @@ class _RatingScreenState
               controller:
                   reviewController,
               maxLines: 4,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
               decoration:
                   const InputDecoration(
                 labelText: "Review",
-                border:
-                    OutlineInputBorder(),
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
 
@@ -273,6 +312,7 @@ class _RatingScreenState
               "Customer Reviews",
               style: TextStyle(
                 fontSize: 20,
+                color: Colors.white,
                 fontWeight:
                     FontWeight.bold,
               ),
@@ -287,7 +327,7 @@ class _RatingScreenState
                           EdgeInsets.all(
                               20),
                       child: Text(
-                        "No Ratings Found",
+                        "No Ratings Found",style: TextStyle(color: Colors.white),
                       ),
                     ),
                   )

@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:flutter_application_88/service_list.dart';
 import 'package:http/http.dart' as http;
-import 'subcategory_model.dart';
+import 'package:flutter_application_88/models/subcategory_model.dart';
 import 'app_drawer.dart';
 
 class SubCategoryScreen extends StatefulWidget {
@@ -75,8 +76,15 @@ class _SubCategoryScreenState
 @override
 Widget build(BuildContext context) {
   return Scaffold(
+    backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text("Sub Categories"),
+        backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        title: const Text("Sub Categories", style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,)),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -158,7 +166,7 @@ Widget build(BuildContext context) {
                                 style:
                                     ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      Colors.blue,
+                              const Color.fromARGB(238, 13, 27, 61),
                                   foregroundColor:
                                       Colors.white,
                                 ),

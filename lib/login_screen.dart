@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/core/constants/app_colors.dart';
+import 'package:flutter_application_88/views/booking_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'signup_screen.dart';
 import 'home_screen.dart';
-import 'booking_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? serviceId;
@@ -153,37 +153,48 @@ class _LoginScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: AppColors.bg,
       appBar: AppBar(
+         backgroundColor: AppColors.bg,
+         iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
         title:
-            const Text("Login"),
-      ),
+            const Text("Login", style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,),
+      )),
       body: SingleChildScrollView(
         padding:
             const EdgeInsets.all(
                 20),
         child: Column(
           children: [
-            const SizedBox(
-                height: 20),
-
-            const Icon(
-              Icons.person,
-              size: 100,
-              color: Colors.blue,
-            ),
 
             const SizedBox(
                 height: 20),
 
             TextField(
+              style: const TextStyle(color: Colors.white),
               controller:
                   emailController,
               decoration:
                   const InputDecoration(
                 labelText:
                     "Email",
-                border:
-                    OutlineInputBorder(),
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
 
@@ -191,6 +202,7 @@ class _LoginScreenState
                 height: 15),
 
             TextField(
+              style: const TextStyle(color: Colors.white),
               controller:
                   passwordController,
               obscureText: true,
@@ -198,8 +210,19 @@ class _LoginScreenState
                   const InputDecoration(
                 labelText:
                     "Password",
-                border:
-                    OutlineInputBorder(),
+                labelStyle: TextStyle(
+                  color: Colors.white,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
 
