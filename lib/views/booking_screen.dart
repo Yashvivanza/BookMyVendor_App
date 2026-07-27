@@ -1,20 +1,19 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_88/core/constants/app_colors.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_application_88/viewmodels/booking_view_model.dart';
-
+import 'payment_booking_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final String userId;
   final String serviceMasterId;
   final String serviceName;
+  final String servicePrice;
 
   const BookingScreen({
     super.key,
     required this.userId,
     required this.serviceMasterId,
     required this.serviceName,
+    required this.servicePrice,
   });
 
   @override
@@ -22,10 +21,8 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  final TextEditingController dateController =
-      TextEditingController();
-  final BookingViewModel bookingVM =
-    BookingViewModel();
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController requirementController = TextEditingController();
   bool isLoading = false;
   String message = "";
   Color messageColor = Colors.green; 
@@ -33,45 +30,39 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Future<void> addBooking() async {
 
-      if (dateController.text.isEmpty) {
+  if (dateController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Select Booking Date"),
+      ),
+    );
+    return;
+  }
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          const SnackBar(
-            content:
-                Text("Select Booking Date"),
-          ),
-        );
+  if (requirementController.text.trim().isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Please enter your requirements"),
+      ),
+    );
+    return;
+  }
 
-        return;
-      }
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PaymentBookingScreen(
+        userId: widget.userId,
+        serviceMasterId: widget.serviceMasterId,
+        serviceName: widget.serviceName,
+        bookingDate: dateController.text.trim(),
+        requirements: requirementController.text.trim(),
+        price: widget.servicePrice,
+      ),
+    ),
+  );
+}
 
-      setState(() {
-        isLoading = true;
-      });
-
-      var data =
-          await bookingVM.addBooking(
-        bookingDate:
-            dateController.text.trim(),
-        userId:
-            widget.userId,
-        serviceMasterId:
-            widget.serviceMasterId,
-      );
-
-      setState(() {
-        isLoading = false;
-
-        message =
-            data["message"];
-
-        messageColor =
-            data["flag"] == "1"
-                ? Colors.green
-                : Colors.red;
-      });
-    }
   Future<void> selectDate() async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -118,7 +109,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 20),
           TextField(
               controller: dateController,
               readOnly: true,
@@ -139,8 +130,46 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
 
+            
+
             const SizedBox(height: 15),
 
+              TextField(
+                controller: requirementController,
+                maxLines: 2,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+                decoration: const InputDecoration(
+                  labelText: "Special Requirements",
+                  hintText:
+                      "Example: 200 guests, bridal mehendi, red theme decoration...",
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                  ),  
+                  labelStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed:
+                    isLoading ? null : addBooking,
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text(
+                        "Continue to Payment",
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
             if (message.isNotEmpty)
               Text(
                 message,
@@ -152,21 +181,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 textAlign: TextAlign.center,
               ),
 
-            const SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed:
-                    isLoading ? null : addBooking,
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text(
-                        "Confirm Booking",
-                      ),
-              ),
-            ),
-          ],
+           ],
         ),
       ),
     );

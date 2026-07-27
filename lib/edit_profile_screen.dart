@@ -111,6 +111,7 @@ class _EditProfileScreenState
           emailController.text.trim(),
         );
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context)
             .showSnackBar(
           SnackBar(
@@ -121,6 +122,8 @@ class _EditProfileScreenState
 
         Navigator.pop(context);
       } else {
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context)
             .showSnackBar(
           SnackBar(
@@ -134,7 +137,10 @@ class _EditProfileScreenState
         isLoading = false;
       });
 
+      debugPrint(e.toString());
+
       print(e);
+
     }
   }
 
@@ -232,7 +238,8 @@ class _EditProfileScreenState
             const SizedBox(height: 15),
 
             DropdownButtonFormField<String>(
-              value: gender,
+              initialValue: gender,
+
               hint: const Text(
                 "Select",
                 style: TextStyle(color: Colors.white),

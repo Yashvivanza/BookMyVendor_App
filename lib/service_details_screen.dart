@@ -204,6 +204,8 @@ class _ServiceDetailsScreenState
                                           service.serviceMasterId,
                                       serviceName:
                                           service.serviceName,
+                                      servicePrice: 
+                                          service.servicePrice,
                                     ),
                                   ),
                                 );

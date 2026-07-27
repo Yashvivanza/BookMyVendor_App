@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_88/core/constants/app_colors.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'viewmodels/change_password_view_model.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -23,77 +22,13 @@ class _ChangePasswordScreenState
   final confirmPassController =
       TextEditingController();
 
-  bool isLoading = false;
-
-  Future<void> changePassword() async {
-    if (oldPassController.text.isEmpty ||
-        newPassController.text.isEmpty ||
-        confirmPassController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Fill all fields"),
-        ),
-      );
-      return;
-    }
-
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    String userId =
-        prefs.getString("user_id") ?? "";
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      var request = http.MultipartRequest(
-        "POST",
-        Uri.parse(
-          "https://akashsir.in/atproject/atfinder-web/api/api-change-password.php",
-        ),
-      );
-
-      request.fields["user_id"] = userId;
-      request.fields["opass"] =
-          oldPassController.text;
-      request.fields["npass"] =
-          newPassController.text;
-      request.fields["cpass"] =
-          confirmPassController.text;
-
-      var response = await request.send();
-
-      var result =
-          await response.stream.bytesToString();
-
-      var data = jsonDecode(result);
-
-      setState(() {
-        isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(data["message"]),
-        ),
-      );
-
-      if (data["flag"] == "1") {
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-
-      print(e);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+     final passwordVM =
+      Provider.of<ChangePasswordViewModel>(
+    context,
+  );
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
@@ -192,20 +127,46 @@ class _ChangePasswordScreenState
             const SizedBox(height: 20),
 
             SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed:
-                    isLoading ? null : changePassword,
-                child: isLoading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      )
-                    : const Text(
-                        "Change Password",
-                      ),
-              ),
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: passwordVM.isLoading
+                  ? null
+                  : () async {
+
+                      String message =
+                          await passwordVM.changePassword(
+                        oldPassword:
+                            oldPassController.text.trim(),
+                        newPassword:
+                            newPassController.text.trim(),
+                        confirmPassword:
+                            confirmPassController.text.trim(),
+                      );
+
+                      if (!mounted) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(message),
+                        ),
+                      );
+
+                      if (message
+                          .toLowerCase()
+                          .contains("success")) {
+                        Navigator.pop(context);
+                      }
+                    },
+              child: passwordVM.isLoading
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : const Text(
+                      "Change Password",
+                    ),
             ),
+          ),
           ],
         ),
       ),

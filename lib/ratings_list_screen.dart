@@ -34,6 +34,8 @@ class _RatingsListScreenState
     String userId =
         prefs.getString("user_id") ?? "";
 
+   
+
     var request = http.MultipartRequest(
       "POST",
       Uri.parse(
@@ -41,22 +43,30 @@ class _RatingsListScreenState
       ),
     );
 
-    request.fields["user_id"] =
+    request.fields["user_id"] = 
         userId;
 
     request.fields["product_id"] =
-        "";
+        "s";
 
     var response =
         await request.send();
 
     var result =
         await response.stream.bytesToString();
+    
+    print("RATING API RESPONSE");
+    print(result);
 
     var data = jsonDecode(result);
 
     if (data["flag"] == "1") {
       ratings = data["rate_list"];
+        print("TOTAL RATINGS = ${ratings.length}");
+
+    for (var item in ratings) {
+      print(item);
+  }
     }
 
     setState(() {
@@ -84,10 +94,15 @@ class _RatingsListScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
         backgroundColor: AppColors.bg,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
         title:
-            const Text("Ratings"),
+            const Text("Ratings",style: TextStyle(color: Colors.white),),
+        
       ),
       body: isLoading
           ? const Center(
@@ -103,32 +118,69 @@ class _RatingsListScreenState
                     ratings[index];
 
                 return Card(
-                  margin:
-                      const EdgeInsets.all(
-                          10),
-                  child: ListTile(
-                    title: Text(
-                      item[
-                          "rating_name"],
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
-                      children: [
-                        stars(item[
-                            "rating_number"]),
-                        const SizedBox(
-                            height: 5),
-                        Text(item[
-                            "rating_message"]),
+                color: AppColors.card,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+
+                      Row(
+                          children: [
+
+                            const CircleAvatar(
+                              child: Icon(Icons.person),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                item["rating_name"],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight:
+                                      FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+
+                            stars(
+                              item["rating_number"],
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
                         Text(
-                          item[
-                              "rating_date"],
-                          style:
-                              const TextStyle(
-                            color:
-                                Colors.grey,
+                          item["rating_message"],
+                          style: const TextStyle(
+                            color: Colors.white70,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Align(
+                          alignment:
+                              Alignment.centerRight,
+                          child: Text(
+                            item["rating_date"],
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],

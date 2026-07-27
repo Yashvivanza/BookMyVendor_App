@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_application_88/models/category_model.dart';
 
-class CategoryViewModel {
+class CategoryViewModel extends ChangeNotifier {
 
-  Future<List<dynamic>> getCategories() async {
+  List<CategoryModel> categories = [];
+
+  bool isLoading = false;
+
+  Future<void> loadCategories() async {
+
+    isLoading = true;
+    notifyListeners();
 
     try {
 
@@ -16,14 +25,42 @@ class CategoryViewModel {
       final data = jsonDecode(response.body);
 
       if (data["flag"] == "1") {
-        return data["category_list"];
+
+        categories =
+            (data["category_list"] as List)
+                .map(
+                  (e) => CategoryModel.fromJson(e),
+                )
+                .toList();
       }
 
-      return [];
-
     } catch (e) {
-      print(e);
-      return [];
+
+      debugPrint(e.toString());
+
     }
+
+    isLoading = false;
+    notifyListeners();
   }
+  Future<List<dynamic>> getCategories() async {
+  try {
+    final response = await http.get(
+      Uri.parse(
+        'https://akashsir.in/atproject/atfinder-web/api/api-list-category.php',
+      ),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (data["flag"] == "1") {
+      return data["category_list"];
+    }
+
+    return [];
+  } catch (e) {
+    debugPrint(e.toString());
+    return [];
+  }
+}
 }

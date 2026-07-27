@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-class RatingViewModel {
+import 'package:flutter/material.dart';
+class RatingViewModel extends ChangeNotifier{
   List ratings = [];
 
   bool isLoading = false;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_88/core/constants/app_colors.dart';
+import 'package:flutter_application_88/views/feedback_list_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 import 'category_screen.dart';
@@ -9,7 +10,6 @@ import 'booking_list_screen.dart';
 import 'favourite_screen.dart';
 import 'change_password_screen.dart';
 import 'profile_screen.dart';
-
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -33,7 +33,9 @@ class _AppDrawerState
  Future<void> loadUserData() async {
   final prefs =
       await SharedPreferences.getInstance();
-
+  print("user_name = ${prefs.getString("user_name")}");
+  print("user_email = ${prefs.getString("user_email")}");
+  print("user_photo = ${prefs.getString("user_photo")}");
   setState(() {
     name =
         prefs.getString("user_name") ?? "";
@@ -47,6 +49,7 @@ class _AppDrawerState
 }
 
   Future<void> logout() async {
+      
     final prefs =
         await SharedPreferences.getInstance();
 
@@ -207,6 +210,27 @@ class _AppDrawerState
             },
           ),
 
+          ListTile(
+            leading: const Icon(
+              Icons.feedback,
+              color: Colors.white,
+            ),
+            title: const Text(
+              "Feedbacks",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const FeedbackListScreen(),
+                ),
+              );
+            },
+          ),
 
           ListTile(
             leading: const Icon(Icons.lock),

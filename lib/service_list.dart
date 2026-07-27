@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_88/core/constants/app_colors.dart';
 import 'package:flutter_application_88/service_details_screen.dart';
-import 'package:flutter_application_88/models/service_model.dart';
 import 'package:flutter_application_88/viewmodels/service_view_model.dart';
 import 'app_drawer.dart';
 

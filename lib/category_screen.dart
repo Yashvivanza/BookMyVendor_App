@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_88/core/constants/app_colors.dart';
-import 'package:flutter_application_88/home_screen.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_application_88/models/Category_model.dart';
 import 'subcategory_screen.dart';
 import 'app_drawer.dart';
+import 'package:provider/provider.dart';
+import 'viewmodels/category_view_model.dart';
 
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
@@ -16,55 +13,23 @@ class CategoryScreen extends StatefulWidget {
 }
 
 class _CategoryScreenState extends State<CategoryScreen> {
-  List<CategoryModel> categoryList = [];
 
+  
   @override
   void initState() {
     super.initState();
-    getCategories();
+
+    Future.microtask(() {
+      context.read<CategoryViewModel>().loadCategories();
+    });
   }
 
-  Future<void> getCategories() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://akashsir.in/atproject/atfinder-web/api/api-list-category.php',
-        ),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (data["flag"] == "1") {
-        List list = data["category_list"];
-
-        setState(() {
-          categoryList =
-              list.map((e) => CategoryModel.fromJson(e)).toList();
-        });
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-  Future<void> logout() async {
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    await prefs.clear();
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const HomeScreen(),
-      ),
-      (route) => false,
-    );
-  }
-
+  
   @override
   Widget build(BuildContext context) {
+    final categoryVM =
+    context.watch<CategoryViewModel>();
+
     return Scaffold(
         backgroundColor:AppColors.bg,
       appBar: AppBar(
@@ -89,10 +54,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ),
       ),
       drawer: const AppDrawer(),
-      body: Padding(
+      body: categoryVM.isLoading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+      :Padding(
       padding: const EdgeInsets.all(10),
+      
       child: GridView.builder(
-        itemCount: categoryList.length,
+        itemCount: categoryVM.categories.length,
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -101,12 +71,13 @@ class _CategoryScreenState extends State<CategoryScreen> {
           childAspectRatio: 0.70,
         ),
       itemBuilder: (context, index) {
-        final item = categoryList[index];
+       final item =
+    categoryVM.categories[index];
 
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+        children: [ 
           Expanded(
             flex: 7,
             child: Image.network(

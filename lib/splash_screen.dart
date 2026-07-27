@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
-import 'core/constants/app_colors.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,9 +42,9 @@ class _SplashScreenState
             begin: Alignment.topLeft,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0A2A4F), // Dark Navy
-              Color(0xFF114D88), // Mid Blue
-              Color(0xFF1E88E5), // Bright Blue
+              Color(0xff000814),
+              Color(0xff001D3D),
+              Color(0xff003566), // Bright Blue
             ],
           ),
         ),
@@ -58,7 +58,7 @@ class _SplashScreenState
                 width: 140,
                 height: 140,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Center(

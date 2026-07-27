@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_88/models/service_model.dart';
+import 'package:flutter/material.dart';
 
-class ServiceViewModel {
+class ServiceViewModel extends ChangeNotifier{
 
   List<ServiceModel> serviceList = [];
   List<ServiceModel> filteredList = [];
@@ -40,14 +41,30 @@ class ServiceViewModel {
 
   void search(String value) {
 
-    filteredList = serviceList.where((service) {
-
-      return service.serviceName
-          .toLowerCase()
-          .contains(value.toLowerCase());
-
-    }).toList();
+  if (value.trim().isEmpty) {
+    filteredList = List.from(serviceList);
+    return;
   }
 
-  Future<Object?> getServices() async {}
+  filteredList = serviceList.where((service) {
+
+    return service.serviceName
+            .toLowerCase()
+            .contains(value.toLowerCase()) ||
+
+        service.subCategoryName
+            .toLowerCase()
+            .contains(value.toLowerCase()) ||
+
+        service.servicePrice
+            .toString()
+            .contains(value);
+
+  }).toList();
+}
+
+  Future<Object?> getServices() async {
+    await loadServices();
+  return serviceList;
+  }
 }

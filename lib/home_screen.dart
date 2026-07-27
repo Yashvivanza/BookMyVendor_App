@@ -1,13 +1,17 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/notification_screen.dart';
+import 'package:flutter_application_88/allpayment_booking_screen.dart';
 import 'package:flutter_application_88/quick_booking_screen.dart';
 import 'package:flutter_application_88/search_screen.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'login_screen.dart';
 import 'app_drawer.dart';
 import 'core/constants/app_colors.dart';
-import 'package:flutter_application_88/viewmodels/category_view_model.dart';
+import 'viewmodels/home_view_model.dart';
+import 'views/chatbot_screen.dart';
+import 'package:flutter_application_88/viewmodels/contact_vendor_view_model.dart';
+import 'package:flutter_application_88/viewmodels/booking_view_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,19 +22,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final CategoryViewModel categoryVM =
-  CategoryViewModel();
-  String name = "";
-  String email = "";
-  String photo = "";
-
+  
   @override
   void initState() {
     super.initState();
-    loadUser();
-    fetchBanners();
-  }
 
+    Future.microtask(() {
+      if (!mounted) return;
+      context
+          .read<HomeViewModel>()
+          .loadHomeData();
+
+    });
+  }
+Future<void> logout() async {
+  final prefs =
+      await SharedPreferences.getInstance();
+
+  await prefs.clear();
+
+  if (!mounted) return;
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const LoginScreen(),
+    ),
+    (route) => false,
+  );
+}
 
   Widget _quickAction(
   IconData icon,
@@ -68,53 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-  List<dynamic> banners = [];
-  Future<void> loadUser() async {
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    print("PHOTO IN HOME = ${prefs.getString("user_photo")}");
-
-    setState(() {
-      name =
-          prefs.getString("user_name") ?? "";
-
-      email =
-          prefs.getString("user_email") ?? "";
-
-      photo =
-          prefs.getString("user_photo") ?? "";
-    });
-    print("Home Photo URL = $photo");
-  } 
-
-  Future<void> logout() async {
-    final prefs =
-        await SharedPreferences.getInstance();
-
-    await prefs.clear();
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-      ),
-      (route) => false,
-    );
-  }
-  Future<void> fetchBanners() async {
-
-    final categories =
-        await categoryVM.getCategories();
-
-    setState(() {
-      banners = categories;
-    });
-  }
   @override
   Widget build(BuildContext context) {
+    final homeVM = context.watch<HomeViewModel>();
     return Scaffold(
         backgroundColor: AppColors.bg,
         appBar: AppBar(
@@ -153,15 +129,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   CircleAvatar(
-                    radius: 30,
-                    backgroundImage:
-                        photo.isNotEmpty
-                            ? NetworkImage(photo)
-                            : null,
-                    child: photo.isEmpty
-                        ? const Icon(Icons.person)
-                        : null,
-                  ),
+                  radius: 30,
+                  backgroundImage: homeVM.photo.isNotEmpty
+                      ? NetworkImage(homeVM.photo)
+                      : null,
+                  child: homeVM.photo.isEmpty
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
 
                   const SizedBox(width: 15),
 
@@ -171,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Hi, $name 👋",
+                          "Hi, ${homeVM.name} 👋",
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -180,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
                         const Text(
-                          "Ahmedabad, Gujarat",
+                          "Mumbai, Maharashtra",
                           style: TextStyle(
                             color: Colors.grey,
                           ),
@@ -189,11 +164,57 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  const Icon(
-                    Icons.notifications_none,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                 Stack(
+                  children: [
+
+                    IconButton(
+                      icon: const Icon(
+                        Icons.notifications_none,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+
+                      onPressed: () async {
+
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const NotificationScreen(),
+                          ),
+                        );
+
+                        await homeVM.loadNotificationCount();
+                      },
+                    ),
+
+                    if (homeVM.notificationCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          homeVM.notificationCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 ],
               ),
               
@@ -233,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 9),
 
                   Expanded(
                     child: _quickAction(
@@ -250,24 +271,69 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 9),
                   Expanded(
                     child: _quickAction(
-                      Icons.star,
-                      "Top Rated",
-                      () {
-                        
+                      Icons.contact_mail,
+                      "Contact Vendor",
+                      () async {
+
+                        final prefs =
+                            await SharedPreferences.getInstance();
+
+                        String userId =
+                            prefs.getString("user_id") ?? "";
+
+                        BookingViewModel bookingVM =
+                            BookingViewModel();
+
+                        await bookingVM.getBookings(userId);
+
+                        if (bookingVM.bookingList.isEmpty) {
+
+                          if (!context.mounted) return;
+
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "No bookings found",
+                              ),
+                            ),
+                          );
+
+                          return;
+                        }
+
+                        final latestBooking =
+                            bookingVM.bookingList.first;
+
+                        if (!context.mounted) return;
+
+                        context
+                            .read<ContactVendorViewModel>()
+                            .contactVendor(
+                              booking: latestBooking,
+                            );
                       },
                     ),
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 9),
 
                   Expanded(
                     child: _quickAction(
-                      Icons.person,
-                      "Profile",
-                      () {},
+                      Icons.qr_code_scanner,
+                      "Payment",
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const PaymentBookingScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -289,57 +355,156 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
                 const SizedBox(height: 15),
-              SizedBox(
-                  height: 180,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: banners.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: 170,
-                        margin: const EdgeInsets.only(right: 12),
-                        child: Card(
-                          color: AppColors.card,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(15),
-                          ),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius:
-                                      const BorderRadius.vertical(
-                                    top: Radius.circular(15),
-                                  ),
-                                  child: Image.network(
-                                    banners[index]["category_image"],
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.all(8.0),
-                                child: Text(
-                                  banners[index]["category_name"],
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight:
-                                        FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+              homeVM.isLoading
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+    : SizedBox(
+        height: 180,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: homeVM.banners.length,
+          itemBuilder: (context, index) {
+            return Container(
+              width: 170,
+              margin: const EdgeInsets.only(right: 12),
+              child: Card(
+                color: AppColors.card,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(15),
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius:
+                            const BorderRadius.vertical(
+                          top: Radius.circular(15),
+                        ),
+                        child: Image.network(
+                          homeVM.banners[index]
+                              ["category_image"],
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding:
+                          const EdgeInsets.all(8),
+                      child: Text(
+                        homeVM.banners[index]
+                            ["category_name"],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+
+              const SizedBox(height: 25),
+
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.smart_toy,
+                          color: Colors.blue,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Vendor AI Assistant",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ],
+                    ),
+
+                    SizedBox(height: 10),
+
+                    Text(
+                      "Ask about vendors, pricing, bookings and recommendations.",
+                      style: TextStyle(
+                        color: Colors.grey,
+                      ),
+                    ),
+
+                    SizedBox(height: 15),
+
+                    const SizedBox(height: 15),
+
+                                        Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ChatBotScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.chat_bubble_outline),
+                            label: const Text(
+                              "Start Chat",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              // Phone call action
+                            },
+                            icon: const Icon(
+                              Icons.phone,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              
+              ),
             ],
           ),
         ),

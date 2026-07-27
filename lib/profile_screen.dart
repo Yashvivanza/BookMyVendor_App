@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'edit_profile_screen.dart';
 import 'package:image_picker/image_picker.dart';
+import '../services/notification_service.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -17,7 +18,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState
     extends State<ProfileScreen> {
   bool isLoading = true;
-
+  bool isPickingImage = false;
   File? selectImage;
 
   String name = "";
@@ -56,16 +57,33 @@ class _ProfileScreenState
           await response.stream.bytesToString();
 
       var data = jsonDecode(result);
-
+      print(data);
       if (data["flag"] == "1") {
+        await NotificationService.addNotification(
+          title: "👤 Profile Updated",
+          message: "Your profile information was updated.",
+        );
         String userPhoto =
             data["user_photo"] ?? "";
+        await prefs.setString(
+          "name",
+          data["user_name"] ?? "",
+        );
 
+        await prefs.setString(
+          "email",
+          data["user_email"] ?? "",
+        );
+
+        await prefs.setString(
+          "mobile",
+          data["user_mobile"] ?? "",
+        );
         await prefs.setString(
           "user_photo",
           userPhoto,
         );
-
+        print(data);
         if (!mounted) return;
 
         setState(() {
@@ -102,19 +120,37 @@ class _ProfileScreenState
       });
     }
   }
-  Future<void> pickImage() async {
-    final picker = ImagePicker();
+ Future<void> pickImage() async {
 
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
+    if (isPickingImage) return;
 
-    if (image != null) {
-      selectImage = File(image.path);
+    isPickingImage = true;
 
-      setState(() {});
+    try {
 
-      uploadImage();
+      final picker = ImagePicker();
+
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+      );
+
+      if (image != null) {
+
+        selectImage = File(image.path);
+
+        setState(() {});
+
+        await uploadImage();
+      }
+
+    } catch (e) {
+
+      print(e);
+
+    } finally {
+
+      isPickingImage = false;
+
     }
   }
  Future<void> uploadImage() async {

@@ -1,4 +1,4 @@
-class ServiceModel {
+class ServiceModel{
   String serviceMasterId;
   String serviceName;
   String servicePrice;

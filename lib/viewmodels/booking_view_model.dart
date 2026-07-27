@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 
-class BookingViewModel {
+class BookingViewModel extends ChangeNotifier {
 
   bool isLoading = false;
 
@@ -35,15 +36,17 @@ class BookingViewModel {
       print(e);
     }
   }
-
-  Future<Map<String,dynamic>> addBooking({
+  Future<Map<String, dynamic>> addBooking({
     required String bookingDate,
     required String userId,
     required String serviceMasterId,
+    required String requirements,
   }) async {
 
-    try {
+    isLoading = true;
+    notifyListeners();
 
+    try {
       var request = http.MultipartRequest(
         'POST',
         Uri.parse(
@@ -51,27 +54,78 @@ class BookingViewModel {
         ),
       );
 
-      request.fields["booking_date"] =
-          bookingDate;
+      request.fields["booking_date"] = bookingDate;
+      request.fields["user_id"] = userId;
+      request.fields["service_master_id"] = serviceMasterId;
+      request.fields["requirements"] = requirements;
+      print("Requirements = $requirements");
+      var response = await request.send();
 
-      request.fields["user_id"] =
-          userId;
+      var responseData =
+          await response.stream.bytesToString();
 
-      request.fields["service_master_id"] =
-          serviceMasterId;
+      var data = jsonDecode(responseData);
+
+      isLoading = false;
+      notifyListeners();
+
+      return data;
+    } catch (e) {
+
+      isLoading = false;
+      notifyListeners();
+
+      return {
+        "flag": "0",
+        "message": e.toString(),
+      };
+    }
+  }
+  Future<Map<String, dynamic>> deleteBooking({
+    required String bookingId,
+  }) async {
+
+    try {
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse(
+          'https://akashsir.in/atproject/atfinder-web/api/api-delete-booking.php',
+        ),
+      );
+
+
+      request.fields["booking_id"] = bookingId;
+
 
       var response = await request.send();
 
-      return jsonDecode(
-        await response.stream.bytesToString(),
-      );
+
+      var responseData =
+          await response.stream.bytesToString();
+
+
+      var data = jsonDecode(responseData);
+
+
+      return data;
+
 
     } catch (e) {
 
       return {
-        "flag":"0",
-        "message":"Something went wrong"
+        "flag": "0",
+        "message": e.toString(),
       };
+
     }
   }
+  Map? getLatestBooking() {
+
+  if (bookingList.isEmpty) {
+    return null;
+  }
+
+  return bookingList.first;
 }
+  }

@@ -37,6 +37,14 @@ class _RatingScreenState
   void initState() {
     super.initState();
     loadRatings();
+    loadUserName();
+  }
+  Future<void> loadUserName() async {
+    SharedPreferences prefs =
+        await SharedPreferences.getInstance();
+
+    nameController.text =
+        prefs.getString("user_name") ?? "";
   }
 
   Future<void> submitRating() async {
@@ -47,6 +55,9 @@ class _RatingScreenState
         prefs.getString("user_id") ?? "";
 
     if (userId.isEmpty) {
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context)
           .showSnackBar(
         const SnackBar(
@@ -61,7 +72,32 @@ class _RatingScreenState
     setState(() {
       isLoading = true;
     });
+        if (selectedRating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please select rating"),
+        ),
+      );
+      return;
+    }
 
+    if (nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Enter your name"),
+        ),
+      );
+      return;
+    }
+
+    if (reviewController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Enter review"),
+        ),
+      );
+      return;
+    }
     var request = http.MultipartRequest(
       "POST",
       Uri.parse(
@@ -95,6 +131,7 @@ class _RatingScreenState
     setState(() {
       isLoading = false;
     });
+   if (!mounted) return;
 
     ScaffoldMessenger.of(context)
         .showSnackBar(
@@ -236,6 +273,7 @@ class _RatingScreenState
             TextField(
               controller:
                   nameController,
+                  readOnly: true,
               style: const TextStyle(
                 color: Colors.white,
               ),
@@ -320,14 +358,36 @@ class _RatingScreenState
 
             const SizedBox(height: 15),
 
-            ratings.isEmpty
+         ratings.isEmpty
                 ? const Center(
                     child: Padding(
-                      padding:
-                          EdgeInsets.all(
-                              20),
-                      child: Text(
-                        "No Ratings Found",style: TextStyle(color: Colors.white),
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.star_border,
+                            size: 70,
+                            color: Colors.white54,
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "No Reviews Yet",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Text(
+                            "Be the first to rate this service",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   )

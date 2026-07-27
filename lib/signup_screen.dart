@@ -198,7 +198,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
             DropdownButtonFormField<String>(
               dropdownColor: AppColors.bg,
-              value: gender,
+              initialValue: gender,
               hint: const Text(
                 "Select",
                 style: TextStyle(color: Colors.white),
