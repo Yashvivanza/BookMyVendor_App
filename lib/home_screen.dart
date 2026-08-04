@@ -12,6 +12,7 @@ import 'viewmodels/home_view_model.dart';
 import 'views/chatbot_screen.dart';
 import 'package:flutter_application_88/viewmodels/contact_vendor_view_model.dart';
 import 'package:flutter_application_88/viewmodels/booking_view_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -52,6 +53,16 @@ Future<void> logout() async {
   );
 }
 
+Future<void> openDialer() async {
+  final Uri phoneUri = Uri(
+    scheme: 'tel',
+    path: '9876543210', // Vendor Number
+  );
+
+  if (await canLaunchUrl(phoneUri)) {
+    await launchUrl(phoneUri);
+  }
+}
   Widget _quickAction(
   IconData icon,
   String title,
@@ -491,8 +502,8 @@ Future<void> logout() async {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: IconButton(
-                            onPressed: () {
-                              // Phone call action
+                            onPressed: () async{
+                               await openDialer();
                             },
                             icon: const Icon(
                               Icons.phone,

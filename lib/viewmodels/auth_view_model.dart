@@ -103,7 +103,35 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     }
   }
+Future<String> forgotPassword(String email) async {
+  try {
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse(
+        "https://akashsir.in/atproject/atfinder-web/api/api-user-forgot-password.php",
+      ),
+    );
 
+    request.fields["user_email"] = email;
+
+    var response = await request.send();
+
+    var res =
+        await response.stream.bytesToString();
+
+    debugPrint("Response: $res");
+
+    var data = jsonDecode(res);
+
+    return data["message"].toString();
+
+  } catch (e) {
+
+    debugPrint("Error: $e");
+
+    return "Something went wrong";
+  }
+}
   Future<bool> signup({
 
     required String name,

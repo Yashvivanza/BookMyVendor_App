@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../models/chat_message_model.dart';
 import '../services/groq_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -70,25 +69,26 @@ class ChatBotViewModel extends ChangeNotifier {
   }
   
  Future<void> initSpeech() async {
-
-  await Permission.microphone.request();
-
-  bool available =
-      await speech.initialize();
-
-  debugPrint(
-    "Speech Init: $available",
+  bool available = await speech.initialize(
+    onStatus: (status) {
+      debugPrint("Status: $status");
+    },
+    onError: (error) {
+      debugPrint("Error: $error");
+    },
   );
+
+  debugPrint("Speech Init: $available");
 }
   Future<String?> getDeviceLanguage() async {
-      var locales = await speech.locales();
-      for (var locale in locales) {
-        debugPrint(
-          "${locale.localeId} - ${locale.name}",
-        );
-      }
-      return null;
-    }
+  var locales = await speech.locales();
+
+  if (locales.isNotEmpty) {
+    return locales.first.localeId;
+  }
+
+  return null;
+}
     
   Future<void> startListening(
     TextEditingController controller,

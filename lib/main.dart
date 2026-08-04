@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_88/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'splash_screen.dart';
 import 'viewmodels/home_view_model.dart';
 import 'viewmodels/service_view_model.dart';
 import 'viewmodels/category_view_model.dart';
@@ -85,12 +85,12 @@ class BookMyVendorApp extends StatelessWidget {
       ],
     
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
+        debugShowCheckedModeBanner: false,  
         title: 'BookMyVendor App',
         theme: ThemeData(
           useMaterial3: true,
         ),
-        home: const SplashScreen(),
+        home: const HomeScreen(),
       ),
     );
   }
